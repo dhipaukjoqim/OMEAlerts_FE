@@ -207,7 +207,7 @@ export default class Home extends Component {
 
     async componentWillMount() {
       const response = await axios
-        .get('http://localhost:5000/keys')
+        .get('https://omealerts.herokuapp.com/keys')
         .catch(err => {
           console.log("error in Axios request", err.message);
         })
@@ -402,7 +402,7 @@ export default class Home extends Component {
       console.log("inside handleConfirmClick")
       //sending request to backend
       const response = await axios
-      .post('http://localhost:5000/', this.state)
+      .post('https://omealerts.herokuapp.com/', this.state)
       .catch(err => {
         console.log("error in Axios request", err.message);
         toast.error(err.message, {
