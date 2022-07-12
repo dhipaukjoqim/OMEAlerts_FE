@@ -35,9 +35,9 @@ print("connected to db")
 # def send_report(path):
 #     return send_from_directory('reports', path)
 
-# def get_cursor(connection): 
-#   connection.ping(reconnect=True)
-#   return connection.cursor()
+def get_cursor(connection): 
+  connection.ping(reconnect=True)
+  return connection.cursor()
 
 app = Flask(__name__)
 
