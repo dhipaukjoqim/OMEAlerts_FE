@@ -1,5 +1,6 @@
 from asyncio.windows_events import NULL
 from pickle import NONE
+from re import T
 from urllib import request
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
@@ -8,6 +9,7 @@ import json
 import os
 from dotenv import load_dotenv
 import logging
+import math
 
 APP_ROOT = os.path.join(os.path.dirname(__file__), '..')   # refers to application_top
 dotenv_path = os.path.join(APP_ROOT, '.env')
@@ -124,9 +126,11 @@ def create_alert():
   if not emailSubject:
     emailSubject = None
   
-  logoURL = request.json['logoURL']
-  if not logoURL:
-    logoURL = None
+  header = request.json['header']
+  if not header:
+    header = None
+  
+  print(header, flush=True)
   
   subheader = request.json['subheader']
   if not subheader:
@@ -135,6 +139,14 @@ def create_alert():
   subheaderOrder = request.json['subheaderOrder']
   if not subheaderOrder:
     subheaderOrder = None
+  
+  recepientList = request.json['recepientList']
+  if not recepientList:
+    recepientList = None
+  
+  frequency = request.json['frequency']
+  if not frequency:
+    frequency = None
 
   get_last_updated_ome_id_query = '''SELECT MAX(idome_alerts) FROM `ome_alerts_DJ_fe_design`;'''
   cur.execute(get_last_updated_ome_id_query)
@@ -143,7 +155,7 @@ def create_alert():
   if last_updated_ome_id:
     try:
       ome_index = last_updated_ome_id[0][0]
-      insert_ome_alert_query = '''INSERT INTO `ome_alerts_DJ_fe_design` (`idome_alerts`,`keyword`, `aliases`, `lemmatizer_application`, `alias_lemmatization`, `negative_aliases`,`negative_search_boolean`, `negative_alias_lemmatization`, `user`, `email_alert`, `search_type`, `sentence_wo_neg_boolean`, `source_select`, `alert_title`, `date_added`, `email_subject`, `logo_url`, `subheader`, `subheader_order`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
+      insert_ome_alert_query = '''INSERT INTO `ome_alerts_DJ_fe_design` (`idome_alerts`,`keyword`, `aliases`, `lemmatizer_application`, `alias_lemmatization`, `negative_aliases`,`negative_search_boolean`, `negative_alias_lemmatization`, `user`, `email_alert`, `search_type`, `sentence_wo_neg_boolean`, `source_select`, `alert_title`, `date_added`, `email_subject`, `header`, `subheader`, `subheader_order`, `recepient_list`, `frequency`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
       ome_index += 1  # increase index as necessary
       cur.execute(
         insert_ome_alert_query, (
@@ -163,9 +175,11 @@ def create_alert():
             alertTitle, 
             alertDate,
             emailSubject,
-            logoURL,
+            header,
             subheader,
-            subheaderOrder
+            subheaderOrder,
+            recepientList,
+            frequency
           )
         )
     except Exception as e:
@@ -214,19 +228,118 @@ def get_keywords_aliases():
   subheadings = cur.fetchall()
   print(subheadings, flush=True)
 
+  heading_query = '''SELECT DISTINCT header
+    FROM `ome_alerts_DJ_fe_design`
+    '''
+  cur.execute(heading_query)
+  headings = cur.fetchall()
+  print(headings, flush=True)
+
   d = dict()
   d['keywords'] = keywords
   d['aliases'] = aliases
   d['subheadings'] = subheadings
-  
-  # response = {
-  #   keywords,
-  #   aliases
-  # }
+  d['headings'] = headings
   
   connection.commit()
   connection.close()
   return jsonify(d)
+
+@app.route('/alerts', methods=["POST"])
+@cross_origin()
+def alerts():
+  print('Inside alerts', flush=True)
+  
+  connection = connect_db()
+  cur = connection.cursor()
+
+  user = request.json['user']
+  print('user', flush=True)
+
+  currentPage = request.json['activePage']
+
+  #setting pageLimit as constant for now, should probably set as environment variable
+  pageLimit = 5
+  skipLimit = (currentPage-1)*pageLimit
+  
+  fetch_user_query = """SELECT alert_title, user, date_added, subheader, header, email, idome_alerts
+    FROM ome_alerts_DJ_fe_design
+    WHERE user LIKE %s
+    ORDER BY date_added DESC
+    LIMIT %s 
+    OFFSET %s
+    """
+  cur.execute(fetch_user_query, ["%" + user + "%", pageLimit, skipLimit])
+  alerts = cur.fetchall()
+  print(alerts, flush=True)
+
+  total_user_query = """SELECT COUNT(SELECT * WHERE user LIKE %s) FROM ome_alerts_DJ_fe_design"""
+  total_user_query = """SELECT COUNT(*) FROM (
+    SELECT * FROM ome_alerts_DJ_fe_design WHERE user LIKE %s
+  ) AS derived;"""
+  cur.execute(total_user_query, ["%" + user + "%"])
+  count = cur.fetchall()
+  print(count, flush=True)
+
+
+  subheading_query = '''SELECT DISTINCT subheader
+    FROM `ome_alerts_DJ_fe_design`
+    '''
+  cur.execute(subheading_query)
+  subheadings = cur.fetchall()
+
+  heading_query = '''SELECT DISTINCT header
+    FROM `ome_alerts_DJ_fe_design`
+    '''
+  cur.execute(heading_query)
+  headings = cur.fetchall()
+
+  email_query = '''SELECT DISTINCT email
+    FROM `ome_alerts_DJ_fe_design`
+    '''
+  cur.execute(email_query)
+  emails = cur.fetchall()
+
+  res = dict()
+  res['alerts'] = alerts
+  res['count'] = math.ceil(count[0][0]/pageLimit)
+  res['subheadings'] = subheadings
+  res['headings'] = headings
+  res['emails'] = emails
+  
+  connection.commit()
+  connection.close()
+  return jsonify(res)
+
+
+@app.route('/update_alert', methods=["POST"])
+@cross_origin()
+def update_alert():
+  print('Inside update alerts', flush=True)
+  
+  connection = connect_db()
+  cur = connection.cursor()
+
+  print(request.json, flush=True)
+
+  #data = request.data
+  
+  omeId = request.json[6]
+  subheader = request.json[3]
+  header = request.json[4]
+  email = request.json[5]
+
+  print(header, flush=True)
+
+  alert_update_query = "UPDATE ome_alerts_DJ_fe_design SET subheader=%s, header=%s, email=%s WHERE idome_alerts=%s;"
+  values = (subheader, header, email, omeId)
+  cur.execute(alert_update_query, values)
+
+  res = 'updated'
+  
+  connection.commit()
+  connection.close()
+  return jsonify(res)
 
 if __name__ == '__main__':
   app.run(debug=False)
