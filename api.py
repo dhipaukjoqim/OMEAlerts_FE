@@ -39,7 +39,7 @@ print(mysql_user)
 
 app = Flask(__name__)
 
-@app.route('/database', methods=['GET', 'POST']) 
+# @app.route('/database', methods=['GET', 'POST']) 
 def connect_db():
   connection = pymysql.connect(host=mysql_host, user=mysql_user, port=int(mysql_port), password=mysql_password, database=mysql_dbname, connect_timeout=CONNECTION_TIMEOUT)
   print("connected to db")
