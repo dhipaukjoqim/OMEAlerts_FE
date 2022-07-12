@@ -33,17 +33,17 @@ print(mysql_user)
 # def send_report(path):
 #     return send_from_directory('reports', path)
 
+# def get_cursor(connection): 
+#   connection.ping(reconnect=True)
+#   return connection.cursor()
+
+app = Flask(__name__)
+
+@app.route('/database', methods=['GET', 'POST']) 
 def connect_db():
   connection = pymysql.connect(host=mysql_host, user=mysql_user, port=int(mysql_port), password=mysql_password, database=mysql_dbname, connect_timeout=CONNECTION_TIMEOUT)
   print("connected to db")
   return connection
-
-  
-def get_cursor(connection): 
-  connection.ping(reconnect=True)
-  return connection.cursor()
-
-app = Flask(__name__)
 
 # @app.route('/public')
 # def root():
