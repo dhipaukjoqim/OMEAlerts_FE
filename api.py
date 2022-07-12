@@ -28,6 +28,8 @@ print(mysql_host)
 print(mysql_port)
 print(mysql_dbname)
 print(mysql_user)
+connection = pymysql.connect(host=mysql_host, user=mysql_user, port=int(mysql_port), password=mysql_password, database=mysql_dbname, connect_timeout=CONNECTION_TIMEOUT)
+print("connected to db")
 
 # @app.route('/reports/<path:path>')
 # def send_report(path):
@@ -40,10 +42,10 @@ print(mysql_user)
 app = Flask(__name__)
 
 # @app.route('/database', methods=['GET', 'POST']) 
-def connect_db():
-  connection = pymysql.connect(host=mysql_host, user=mysql_user, port=int(mysql_port), password=mysql_password, database=mysql_dbname, connect_timeout=CONNECTION_TIMEOUT)
-  print("connected to db")
-  return connection
+# def connect_db():
+#   connection = pymysql.connect(host=mysql_host, user=mysql_user, port=int(mysql_port), password=mysql_password, database=mysql_dbname, connect_timeout=CONNECTION_TIMEOUT)
+#   print("connected to db")
+#   return connection
 
 # @app.route('/public')
 # def root():
