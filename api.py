@@ -1,6 +1,7 @@
 # from asyncio.windows_events import NULL
 from pickle import NONE
 from re import T
+import re
 from urllib import request
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
@@ -35,7 +36,7 @@ def connect_db():
   print("connected to db")
   return connection
 
-print("connected to db")
+print("after connection to db")
 
 # @app.route('/reports/<path:path>')
 # def send_report(path):
@@ -116,8 +117,8 @@ def create_alert():
   if not sourceClass:
     sourceClass = sourceLink
   
-  if not sourceLink:
-    sourceClass = None
+  # if not sourceLink:
+  #   sourceClass = None
 
   alertTitle = request.json['alertTitle']
   if not alertTitle:
@@ -152,6 +153,58 @@ def create_alert():
   frequency = request.json['frequency']
   if not frequency:
     frequency = None
+    s = ""
+  else:
+    s = ","
+    s = s.join(frequency)
+  
+  synrel = request.json['synrel']
+  if synrel==False:
+    synrel = 0
+  else:
+    synrel = 1
+
+  mddar = request.json['mddar']
+  if mddar==False:
+    mddar = 0
+  else:
+    mddar = 1
+
+  irrtextrem = request.json['irrtextrem']
+  if irrtextrem==False:
+    irrtextrem = 0
+  else:
+    irrtextrem = 1
+
+  marelmat = request.json['marelmat']
+  if marelmat==False:
+    marelmat = 0
+  else:
+    marelmat = 1
+
+  summary = request.json['summary']
+  if summary==False:
+    summary = 0
+  else:
+    summary = 1
+    
+  relstories = request.json['relstories']
+  if relstories==False:
+    relstories = 0
+  else:
+    relstories = 1
+
+  hisrelstories = request.json['hisrelstories']
+  if hisrelstories==False:
+    hisrelstories = 0
+  else:
+    hisrelstories = 1
+
+  trendnews = request.json['trendnews']
+  if trendnews==False:
+    trendnews = 0
+  else:
+    trendnews = 1
 
   get_last_updated_ome_id_query = '''SELECT MAX(idome_alerts) FROM `ome_alerts_DJ_fe_design`;'''
   cur.execute(get_last_updated_ome_id_query)
@@ -160,7 +213,14 @@ def create_alert():
   if last_updated_ome_id:
     try:
       ome_index = last_updated_ome_id[0][0]
-      insert_ome_alert_query = '''INSERT INTO `ome_alerts_DJ_fe_design` (`idome_alerts`,`keyword`, `aliases`, `lemmatizer_application`, `alias_lemmatization`, `negative_aliases`,`negative_search_boolean`, `negative_alias_lemmatization`, `user`, `email_alert`, `search_type`, `sentence_wo_neg_boolean`, `source_select`, `alert_title`, `date_added`, `email_subject`, `header`, `subheader`, `subheader_order`, `recepient_list`, `frequency`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
+      insert_ome_alert_query = '''INSERT INTO `ome_alerts_DJ_fe_design` 
+      (`idome_alerts`,`keyword`, `aliases`, `lemmatizer_application`, `alias_lemmatization`, 
+      `negative_aliases`,`negative_search_boolean`, `negative_alias_lemmatization`, 
+      `user`, `email_alert`, `search_type`, `sentence_wo_neg_boolean`, `source_select`, 
+      `alert_title`, `date_added`, `email_subject`, `header`, `subheader`, `subheader_order`, 
+      `recepient_list`, `frequency`, `synrel`, `mddar`, `irrtextrem`, `marelmat`, `summary`, 
+      `related_stories`, `historical_related_stories`, `trending_news`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+      %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
       ome_index += 1  # increase index as necessary
       cur.execute(
         insert_ome_alert_query, (
@@ -184,7 +244,15 @@ def create_alert():
             subheader,
             subheaderOrder,
             recepientList,
-            frequency
+            s,
+            synrel,
+            mddar,
+            irrtextrem,
+            marelmat,
+            summary,
+            relstories,
+            hisrelstories,
+            trendnews
           )
         )
     except Exception as e:
@@ -267,7 +335,17 @@ def alerts():
   pageLimit = 5
   skipLimit = (currentPage-1)*pageLimit
   
-  fetch_user_query = """SELECT alert_title, user, date_added, subheader, header, email, idome_alerts
+  fetch_user_query = """SELECT
+    alert_title, 
+    user, 
+    date_added, 
+    subheader, 
+    header, 
+    email, 
+    idome_alerts,
+    keyword,
+    aliases,
+    search_type
     FROM ome_alerts_DJ_fe_design
     WHERE user LIKE %s
     ORDER BY date_added DESC
@@ -326,8 +404,6 @@ def update_alert():
   cur = connection.cursor()
 
   print(request.json, flush=True)
-
-  #data = request.data
   
   omeId = request.json[6]
   subheader = request.json[3]
@@ -341,6 +417,54 @@ def update_alert():
   cur.execute(alert_update_query, values)
 
   res = 'updated'
+  
+  connection.commit()
+  connection.close()
+  return jsonify(res)
+
+
+@app.route('/alert', methods=["POST"])
+@cross_origin()
+def alert():
+  print('Inside get alerts from Id', flush=True)
+  
+  connection = connect_db()
+  cur = connection.cursor()
+
+  omeId = request.json['omeId']
+  
+  fetch_alert_query = """SELECT
+    alert_title, 
+    user, 
+    date_added, 
+    subheader, 
+    header, 
+    email, 
+    idome_alerts,
+    keyword,
+    aliases,
+    search_type,
+    source_select,
+    user,
+    email_alert,
+    lemmatizer_application,
+    summary,
+    related_stories,
+    historical_related_stories,
+    trending_news,
+    synrel,
+    mddar,
+    irrtextrem,
+    marelmat
+    FROM ome_alerts_DJ_fe_design
+    WHERE idome_alerts = %s
+    """
+  cur.execute(fetch_alert_query, [omeId])
+  alert = cur.fetchall()
+  print(alert, flush=True)
+
+  res = dict()
+  res['alert'] = alert
   
   connection.commit()
   connection.close()

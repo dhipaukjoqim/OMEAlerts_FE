@@ -138,7 +138,7 @@ export default class ReviewAlert extends Component {
       let preparedSubheadinOptions = [];
       for(let option of subheadingOptions) {
          let object = {};
-         object.key = option[0]
+         object.key = option[0];
          object.text = option[0];
          object.value = option[0];
 
@@ -283,6 +283,28 @@ export default class ReviewAlert extends Component {
       }))
    }
 
+   downloadKeywordsTextFile = (textContents) => {
+      const element = document.createElement("a");
+      const file = new Blob([textContents], {
+         type: "text/plain"
+      })
+      element.href = URL.createObjectURL(file);
+      element.download = "keywords.txt";
+      document.body.appendChild(element);
+      element.click();
+   };
+
+   downloadAliasesTextFile = (textContents) => {
+      const element = document.createElement("a");
+      const file = new Blob([textContents], {
+         type: "text/plain"
+      })
+      element.href = URL.createObjectURL(file);
+      element.download = "aliases.txt";
+      document.body.appendChild(element);
+      element.click();
+   };
+
    render() {
       console.log("state in review alert", this.state);
       return (
@@ -362,7 +384,7 @@ export default class ReviewAlert extends Component {
                               </Form.Field>
 
                               <Form.Field inline>
-                              <label style={{ marginRight: "77px"}}>Email</label>
+                              <label style={{ marginRight: "94px"}}>Email</label>
                               <Dropdown
                                  name= 'email'
                                  placeholder= 'Select email'
@@ -396,10 +418,25 @@ export default class ReviewAlert extends Component {
                                  <List.Icon name='alarm' size='large' verticalAlign='middle' />
                                  <List.Content>
                                  <List.Header as='a'>{item[0]}</List.Header>
+                                 <List.Description as='a' style={{ marginTop: "2px"}}>{item[9]}</List.Description>
+                                 <List.Description as='a'>
+                                    {/* {item[7]} */}
+                                    <a onClick={() => this.downloadKeywordsTextFile(item[7])}>keywords.txt</a>
+                                 </List.Description>
+                                 <List.Description as='a'>
+                                    {/* {item[8]} */}
+                                    <a onClick={() => this.downloadAliasesTextFile(item[8])}>aliases.txt</a>
+                                 </List.Description>
+                                 <List.Description as='a'></List.Description>
                                  <List.Description as='a'>{item[1]}</List.Description>
                                  <List.Description as='a'>{this.cleanDate(item[2])}</List.Description>
                                  </List.Content>
                               </List.Item>
+                              <Button 
+                                 style={{ float: 'right', marginRight: "120px", marginBottom: "50px"}} 
+                                 primary
+                                 onClick={() => {window.location.href=`edit/${item[6]}`}}
+                              >Edit</Button>
                               <Dropdown
                                  style={{ marginTop: "10px", marginBottom: "10px", marginLeft: "25px"}}
                                  name= {i}
@@ -412,6 +449,7 @@ export default class ReviewAlert extends Component {
                                  allowAdditions
                                  onAddItem={this.handleSubheaderAddition}
                               />
+                              
                            </>
                            
                         );

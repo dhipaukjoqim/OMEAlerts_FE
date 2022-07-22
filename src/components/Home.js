@@ -207,7 +207,7 @@ export default class Home extends Component {
 
     async componentWillMount() {
       const response = await axios
-        .get('https://omealerts.herokuapp.com/keys')
+        .get('http://localhost:5000/keys')
         .catch(err => {
           console.log("error in Axios request", err.message);
         })
@@ -330,7 +330,7 @@ export default class Home extends Component {
     async componentDidMount() {
       const currentDate = moment().format('YYYY-MM-DD');
       const currentTime = moment().format('HH:mm')
-      let currentDateTime = `${currentDate}T${currentTime}`
+      let currentDateTime = `${currentDate}`
       currentDateTime = currentDateTime.split(' ')[0];
 
       //reading csv contents from public/data/link.csv
@@ -402,7 +402,8 @@ export default class Home extends Component {
       console.log("inside handleConfirmClick")
       //sending request to backend
       const response = await axios
-      .post('https://omealerts.herokuapp.com/', this.state)
+      // .post('https://omealerts.herokuapp.com/', this.state)\
+      .post('http://localhost:5000/', this.state)
       .catch(err => {
         console.log("error in Axios request", err.message);
         toast.error(err.message, {
@@ -458,17 +459,17 @@ export default class Home extends Component {
 
                 <Form.Field inline>
                 <label style={{ marginRight: "77px"}}>Heading</label>
-                <Dropdown
-                  name= 'header'
-                  placeholder= 'Select header'
-                  selection
-                  search
-                  options={this.state.headingOptions} 
-                  onChange={this.handleChange}
-                  value={this.state.header}
-                  allowAdditions
-                  onAddItem={this.handleHeadingAddition}
-                />
+                  <Dropdown
+                    name= 'header'
+                    placeholder= 'Select header'
+                    selection
+                    search
+                    options={this.state.headingOptions} 
+                    onChange={this.handleChange}
+                    value={this.state.header}
+                    allowAdditions
+                    onAddItem={this.handleHeadingAddition}
+                  />
                 </Form.Field>
 
                 <Form.Field inline>
@@ -696,20 +697,18 @@ export default class Home extends Component {
             {!this.state.loading && (
               <div>
               <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme='colored'
-            />
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme='colored'
+              />
             <HeaderContent />
-            {/* <p>{this.state.output.hello}</p>
-            <p>{this.state.output.results}</p> */}
             <Grid columns={3} style={{ marginTop: "20px"}}>
               <Grid.Row>
                 <Grid.Column>
@@ -828,6 +827,7 @@ export default class Home extends Component {
                               this.state.synrel = data.checked
                             }}
                             value={this.state.synrel}
+                            defaultChecked={this.state.synrel}
                           />
                           </Form.Field>
                           <Form.Field inline style={{ marginTop: "5px"}}>
@@ -840,6 +840,7 @@ export default class Home extends Component {
                                 this.state.mddar = data.checked
                               }}
                               value={this.state.mddar}
+                              defaultChecked={this.state.mddar}
                             />
                           </Form.Field>
                           <Form.Field inline style={{ marginTop: "5px"}}>
@@ -852,6 +853,7 @@ export default class Home extends Component {
                                 this.state.irrtextrem = data.checked
                               }}
                               value={this.state.irrtextrem}
+                              defaultChecked={this.state.irrtextrem}
                             />
                           </Form.Field>
                           <Form.Field inline style={{ marginTop: "5px"}}>
@@ -863,6 +865,7 @@ export default class Home extends Component {
                               onChange={(e, data) => {
                                 this.state.marelmat = data.checked
                               }}
+                              defaultChecked={this.state.marelmat}
                               value={this.state.marelmat}
                             />
                           </Form.Field>
@@ -898,6 +901,7 @@ export default class Home extends Component {
                               this.state.summary = data.checked
                             }}
                             value={this.state.summary}
+                            defaultChecked={this.state.summary}
                           />
                           </Form.Field>
                           <Form.Field inline style={{ marginTop: "5px"}}>
@@ -910,6 +914,7 @@ export default class Home extends Component {
                                 this.state.relstories = data.checked
                               }}
                               value={this.state.relstories}
+                              defaultChecked={this.state.relstories}
                             />
                           </Form.Field>
                           <Form.Field inline style={{ marginTop: "5px"}}>
@@ -922,6 +927,7 @@ export default class Home extends Component {
                                 this.state.hisrelstories = data.checked
                               }}
                               value={this.state.hisrelstories}
+                              defaultChecked={this.state.hisrelstories}
                             />
                           </Form.Field>
                           <Form.Field inline style={{ marginTop: "5px"}}>
@@ -934,6 +940,7 @@ export default class Home extends Component {
                                 this.state.trendnews = data.checked
                               }}
                               value={this.state.trendnews}
+                              defaultChecked={this.state.trendnews}
                             />
                           </Form.Field>
                         </Form>
@@ -1077,7 +1084,7 @@ export default class Home extends Component {
                     <Form.Field inline>
                       <label style={{ marginRight: "15px"}}>Date added</label>
                       <input 
-                        type="datetime-local" 
+                        type="date" 
                         min={currentDateTime.split(' ')[0]}
                         value={this.state.alertDate}
                         name="alertDate"
