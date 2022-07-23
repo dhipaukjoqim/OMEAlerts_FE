@@ -10,14 +10,13 @@ class HeaderContent extends Component {
                     style={{marginTop: "80px", textAlign: "center", display: "inline" }}
                 >
                     OME Alerts
-
                 </Header>
                 <Button 
                     primary 
                     style={{ marginLeft: "71%", marginTop: "20px" }}
                     onClick={() => {window.location.href="/review"}}
                 >
-                    Review Alert
+                    Review Alerts
                 </Button>
             </div>
         );

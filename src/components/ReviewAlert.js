@@ -455,12 +455,15 @@ export default class ReviewAlert extends Component {
                         );
                      })}
                   </List>
-                  <Pagination
-                     style={{ marginTop: "10px", marginBottom: "30px" }} 
-                     defaultActivePage={this.state.activePage} 
-                     totalPages={this.state.totalPages} 
-                     onPageChange={this.handlePaginationChange} 
-                  />
+                  {this.state.alerts.length>0 && (
+                     <Pagination
+                        style={{ marginTop: "10px", marginBottom: "30px" }} 
+                        defaultActivePage={this.state.activePage} 
+                        totalPages={this.state.totalPages} 
+                        onPageChange={this.handlePaginationChange} 
+                     />
+                  )}
+                  
 
                   {this.state.alertUpdationConfirmed && this.renderConfirmationResponseModal()}
                </div>

@@ -78,7 +78,27 @@ export default class EditAlert extends Component {
          console.log("response", response)
          let alert = response.data.alert[0];
          let keywords = alert[7].split(',');
+
+         let currentKeywordOptions = this.state.keywordOptions;
+         for(let key of keywords) {
+            let obj = {};
+            obj.key = key;
+            obj.text = key;
+            obj.value = key
+            currentKeywordOptions.push(obj)
+         }
+         console.log("currentKeywordOptions", currentKeywordOptions)
+         
          let aliases = alert[8].split(',')
+         let currentAliasesOptions = this.state.aliasesOptions;
+         for(let alias of aliases) {
+            let obj = {};
+            obj.key = alias;
+            obj.text = alias;
+            obj.value = alias
+            currentAliasesOptions.push(obj)
+         }
+
          let searchtype = alert[9];
          let sourceClass = alert[10];
          let user = alert[11];
@@ -142,6 +162,26 @@ export default class EditAlert extends Component {
             marelmat = true;
          else 
             marelmat= false;
+         
+         let aliaslem = alert[22];
+         let negalias = alert[23];
+         let negsearchbool = alert[24];
+         let negaliaslemm = alert[25];
+         let senWoNegBool = alert[26];
+         if (senWoNegBool == "yes")
+            senWoNegBool = true
+         else
+            senWoNegBool = false
+
+         let emailSubject = alert[27];
+         let header = alert[28];
+         let subheader = alert[29];
+         let subheaderOrder = alert[30];
+         let frequency = alert[31];
+         if(frequency.split(',').length==1) {
+            frequency = [frequency]
+         }
+         let recepientList = alert[32];
 
          this.setState({
             alert,
@@ -161,7 +201,20 @@ export default class EditAlert extends Component {
             synrel,
             mddar,
             irrtextrem,
-            marelmat
+            marelmat,
+            aliaslem,
+            negalias,
+            negsearchbool,
+            negaliaslemm,
+            senWoNegBool,
+            emailSubject,
+            header,
+            subheader,
+            subheaderOrder,
+            frequency,
+            recepientList,
+            keywordOptions: currentKeywordOptions,
+            aliasesOptions: currentAliasesOptions
          }, async() => {
             response = await axios
                .get('http://localhost:5000/keys')
@@ -198,7 +251,7 @@ export default class EditAlert extends Component {
                }
                preparedKeywords = _.uniq(preparedKeywords);
          
-               let aliasesOptions = [];
+               let aliasesOptions = this.state.aliasesOptions;
                for(let i=0; i<preparedAliases.length; i++) {
                  let object = {};
                  object.key = i;
@@ -207,7 +260,7 @@ export default class EditAlert extends Component {
                  aliasesOptions.push(object)
                }
          
-               let keywordOptions = [];
+               let keywordOptions = this.state.keywordOptions;
                for(let i=0; i<preparedKeywords.length; i++) {
                  let object = {};
                  object.key = i;
@@ -245,10 +298,8 @@ export default class EditAlert extends Component {
          
                this.setState({
                  ...this.state,
-                 aliasesOptions,
                  keywordOptions,
-                 keywordOptions: keywordOptions,
-                 aliasesOptions: aliasesOptions,
+                 aliasesOptions,
                  subheadingOptions: subheadingsOptions,
                  headingOptions,
                  sourceClassOptions,
@@ -256,8 +307,51 @@ export default class EditAlert extends Component {
                }, async () => {
                   //reading csv contents from public/data/link.csv
                   const optionsData = await this.fetchCsv();
+                  const frequencyOptions = [
+                     { key: 'Monday', value: 'Monday', text: 'Monday' },
+                     { key: 'Tuesday', value: 'Tuesday', text: 'Tuesday' },
+                     { key: 'Wednesday', value: 'Wednesday', text: 'Wednesday' },
+                     { key: 'Thursday', value: 'Thursday', text: 'Thursday' },
+                     { key: 'Friday', value: 'Friday', text: 'Friday' },
+                     { key: 'Saturday', value: 'Saturday', text: 'Saturday' },
+                     { key: 'Sunday', value: 'Sunday', text: 'Sunday' },
+                     { key: 'Other', value: 'Other', text: 'Other' },
+                     { key: '1', value: '1', text: '1' },
+                     { key: '2', value: '2', text: '2' },
+                     { key: '3', value: '3', text: '3' },
+                     { key: '4', value: '4', text: '4' },
+                     { key: '5', value: '5', text: '5' },
+                     { key: '6', value: '6', text: '6' },
+                     { key: '7', value: '7', text: '7' },
+                     { key: '8', value: '8', text: '8' },
+                     { key: '9', value: '9', text: '9' },
+                     { key: '10', value: '10', text: '10' },
+                     { key: '11', value: '11', text: '11' },
+                     { key: '12', value: '12', text: '12' },
+                     { key: '13', value: '13', text: '13' },
+                     { key: '14', value: '14', text: '14' },
+                     { key: '15', value: '15', text: '15' },
+                     { key: '16', value: '16', text: '16' },
+                     { key: '17', value: '17', text: '17' },
+                     { key: '18', value: '18', text: '18' },
+                     { key: '19', value: '19', text: '19' },
+                     { key: '20', value: '20', text: '20' },
+                     { key: '21', value: '21', text: '21' },
+                     { key: '22', value: '22', text: '22' },
+                     { key: '23', value: '23', text: '23' },
+                     { key: '24', value: '24', text: '24' },
+                     { key: '25', value: '25', text: '25' },
+                     { key: '26', value: '26', text: '26' },
+                     { key: '27', value: '27', text: '27' },
+                     { key: '28', value: '28', text: '28' },
+                     { key: '29', value: '29', text: '29' },
+                     { key: '30', value: '30', text: '30' },
+                     { key: '31', value: '31', text: '31' },
+                  ]
+                  
                   this.setState({
                      sourceLinkOptions: optionsData,
+                     frequencyOptions
                   })
                })    
          })
@@ -271,47 +365,46 @@ export default class EditAlert extends Component {
    }
 
    handleKeywordsFile = (e) => {
-   e.preventDefault();
-   const reader = new FileReader();
-   reader.onload = (e) => {
-      const text = e.target.result;
-      console.log(text);
-      let keywordsArray = text.split(';');
-      if(keywordsArray.length > 5) {
-         this.setState({
-         error: true,
-         createClicked: true
-         }, () => {
-         toast.error("Keywords count cannot exceed 50 words", {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined
-         });
-         })
-         
-      } else {
-
-         let currentKeywordOptions = this.state.keywordOptions;
-         for(let key of keywordsArray) {
-         let obj = {};
-         obj.key = key;
-         obj.text = key;
-         obj.value = key
-         currentKeywordOptions.push(obj)
+      e.preventDefault();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+         const text = e.target.result;
+         console.log(text);
+         let keywordsArray = text.split(';');
+         if(keywordsArray.length > 5) {
+            this.setState({
+            error: true,
+            createClicked: true
+            }, () => {
+            toast.error("Keywords count cannot exceed 50 words", {
+               position: "top-right",
+               autoClose: 5000,
+               hideProgressBar: false,
+               closeOnClick: true,
+               pauseOnHover: true,
+               draggable: true,
+               progress: undefined
+            });
+            })
+            
+         } else {
+            let currentKeywordOptions = this.state.keywordOptions;
+            for(let key of keywordsArray) {
+               let obj = {};
+               obj.key = key;
+               obj.text = key;
+               obj.value = key
+               currentKeywordOptions.push(obj)
+            }
+            this.setState({
+               keywords: keywordsArray,
+               keywordOptions: currentKeywordOptions,
+               error: false,
+               createClicked: false
+            })
          }
-         this.setState({
-         keywords: keywordsArray,
-         keywordOptions: currentKeywordOptions,
-         error: false,
-         createClicked: false
-         })
-      }
-   };
-   reader.readAsText(e.target.files[0]);
+      };
+      reader.readAsText(e.target.files[0]);
    };
 
    handleAliasAddition = (e, { value }) => {
@@ -407,56 +500,10 @@ export default class EditAlert extends Component {
    }
 
    handleChange = (e, data) => {
-      console.log(data.name)
-      if(data.name==="frequency" && data.value.includes("Other")) {
-        console.log("updating frequency options")
-        let additionalFreqOptions = [
-          { key: '1', value: '1', text: '1' },
-          { key: '2', value: '2', text: '2' },
-          { key: '3', value: '3', text: '3' },
-          { key: '4', value: '4', text: '4' },
-          { key: '5', value: '5', text: '5' },
-          { key: '6', value: '6', text: '6' },
-          { key: '7', value: '7', text: '7' },
-          { key: '8', value: '8', text: '8' },
-          { key: '9', value: '9', text: '9' },
-          { key: '10', value: '10', text: '10' },
-          { key: '11', value: '11', text: '11' },
-          { key: '12', value: '12', text: '12' },
-          { key: '13', value: '13', text: '13' },
-          { key: '14', value: '14', text: '14' },
-          { key: '15', value: '15', text: '15' },
-          { key: '16', value: '16', text: '16' },
-          { key: '17', value: '17', text: '17' },
-          { key: '18', value: '18', text: '18' },
-          { key: '19', value: '19', text: '19' },
-          { key: '20', value: '20', text: '20' },
-          { key: '21', value: '21', text: '21' },
-          { key: '22', value: '22', text: '22' },
-          { key: '23', value: '23', text: '23' },
-          { key: '24', value: '24', text: '24' },
-          { key: '25', value: '25', text: '25' },
-          { key: '26', value: '26', text: '26' },
-          { key: '27', value: '27', text: '27' },
-          { key: '28', value: '28', text: '28' },
-          { key: '29', value: '29', text: '29' },
-          { key: '30', value: '30', text: '30' },
-          { key: '31', value: '31', text: '31' },
-        ]
-        let currentFreqOptions;
-        // currentFreqOptions = this.state.frequencyOptions;
-        // currentFreqOptions = currentFreqOptions.concat(additionalFreqOptions);
-
-        currentFreqOptions = additionalFreqOptions;
-        this.setState({
-          frequencyOptions: currentFreqOptions
-        })
-      } else {
-        this.setState({
-          ...this.state,
-          [data.name]: data.value
-        });
-      }
+      this.setState({
+         ...this.state,
+         [data.name]: data.value
+      });
    };
 
    addSelectedSourceLinkToState = (includeLinks, excludeLinks) => {
@@ -502,6 +549,28 @@ export default class EditAlert extends Component {
 
    handleClose = () => {this.setState({ modalOpen: false })}
    handleModalOpen = () => this.setState({ modalOpen: true });
+
+   downloadKeywordsTextFile = (textContents) => {
+      const element = document.createElement("a");
+      const file = new Blob([textContents], {
+         type: "text/plain"
+      })
+      element.href = URL.createObjectURL(file);
+      element.download = "keywords.txt";
+      document.body.appendChild(element);
+      element.click();
+   };
+
+   downloadAliasesTextFile = (textContents) => {
+      const element = document.createElement("a");
+      const file = new Blob([textContents], {
+         type: "text/plain"
+      })
+      element.href = URL.createObjectURL(file);
+      element.download = "aliases.txt";
+      document.body.appendChild(element);
+      element.click();
+   };
 
    render() {
       console.log("state in edit alert", this.state);
@@ -559,7 +628,10 @@ export default class EditAlert extends Component {
                         <Grid.Column>
                            <Form style={{ marginRight: "40px"}}>
                               <Form.Field inline error={this.state.error}>
-                                 <label style={{ marginRight: "50px"}}>Keywords</label>
+                                 <label style={{ marginRight: "15px"}}>Keywords</label>
+                                 (<a style={{ cursor: "pointer"}} onClick={() => this.downloadKeywordsTextFile(this.state.keywords)}>
+                                    keywords.txt
+                                 </a>)
                                  <Dropdown
                                     name = 'keywords'
                                     placeholder='Enter keywords' 
@@ -585,7 +657,10 @@ export default class EditAlert extends Component {
                               </Form>
                               <Form style={{ marginTop: "40px"}}>
                                  <Form.Field inline style={{ marginRight: "40px"}} error={this.state.error}>
-                                    <label style={{ marginRight: "50px"}}>Aliases</label>
+                                    <label style={{ marginRight: "15px"}}>Aliases</label>
+                                    (<a style={{ cursor: "pointer"}} onClick={() => this.downloadAliasesTextFile(this.state.aliases)}>
+                                       aliases.txt
+                                    </a>)
                                     <Dropdown
                                        name = 'aliases'
                                        placeholder='Enter aliases' 
@@ -822,7 +897,7 @@ export default class EditAlert extends Component {
                                              <Form.Field inline>
                                              <label><b>Alias lemmatization</b></label>
                                              <input
-                                                name="aliaslemm"
+                                                name="aliaslem"
                                                 style={{ marginLeft: "100px", minWidth: "400px"}} 
                                                 placeholder="Enter alias lemmatization"
                                                 onChange={this.handleInputChange}
@@ -871,6 +946,7 @@ export default class EditAlert extends Component {
                                                    this.state.senWoNegBool = data.checked
                                                 }}
                                                 value={this.state.senWoNegBool}
+                                                defaultChecked = {this.state.senWoNegBool}
                                              />
                                              </Form.Field>
                                        </Form>
@@ -939,7 +1015,7 @@ export default class EditAlert extends Component {
                                  onClick={this.handleCreateClick}
                                  disabled={this.state.createClicked}
                               >
-                                 Create
+                                 Save Updates
                               </Button>
                               </Form>
                            </Grid.Column>
@@ -951,5 +1027,174 @@ export default class EditAlert extends Component {
             {this.state.createClicked && this.renderConfirmationModal()}
          </div>
       )
+   }
+
+   renderConfirmationResponseModal = () => {
+      console.log("inside renderConfirmationResponseModal")
+      return (
+        <Modal
+          open={this.state.alertCreationConfirmed}
+          onClose={this.handleConfirmationResponseModalClose}
+          closeIcon
+          size='small'
+          >
+            <Modal.Content>
+              <h2 style={{ textAlign: 'center'}}>
+                Alert Updated! <Icon color="green" name="check circle" />
+              </h2>
+            </Modal.Content>
+            <Modal.Actions>
+            <Button onClick={() => this.handleConfirmationResponseModalClose()}>
+              Close
+            </Button>
+          </Modal.Actions>
+        </Modal>
+      )
+   }
+
+   renderConfirmationModal = () => {
+      console.log("inside renderConfirmationModal")
+      return (
+        <Modal
+          open={this.state.createClicked}
+          onClose={this.handleConfirmationModalClose}
+          closeIcon
+          size='small'
+          >
+            <Header>Confirm Alert</Header>
+            <Modal.Content>
+              <Form>
+                <Form.Field inline>
+                <label style={{ marginRight: "20px"}}>Email Subject</label>
+                <input
+                  name="emailSubject"
+                  style={{ marginLeft: "25px", minWidth: "400px" }} 
+                  placeholder="Enter email subject line"
+                  value={this.state.emailSubject}
+                  onChange={this.handleInputChange}
+                />
+                </Form.Field>
+
+                <Form.Field inline>
+                <label style={{ marginRight: "77px"}}>Heading</label>
+                  <Dropdown
+                    name= 'header'
+                    placeholder= 'Select header'
+                    selection
+                    search
+                    options={this.state.headingOptions} 
+                    onChange={this.handleChange}
+                    value={this.state.header}
+                    allowAdditions
+                    onAddItem={this.handleHeadingAddition}
+                  />
+                </Form.Field>
+
+                <Form.Field inline>
+                <label style={{ marginRight: "55px"}}>Sub heading</label>
+                <Dropdown
+                  name= 'subheader'
+                  placeholder= 'Select subheading'
+                  selection
+                  search
+                  options={this.state.subheadingOptions} 
+                  onChange={this.handleChange}
+                  value={this.state.subheader}
+                  allowAdditions
+                  onAddItem={this.handleSubHeadingAddition}
+                />
+                </Form.Field>
+
+                <Form.Field inline>
+                  <label style={{ marginRight: "20px"}}>Sub heading order</label>
+                  <input
+                    name="subheaderOrder"
+                    placeholder="Select subheading order"
+                    value={this.state.subheaderOrder}
+                    onChange={this.handleInputChange}
+                    style={{ width: "195px"}}
+                  />
+                </Form.Field>
+
+                <Form.Field>
+                  <label>Recepient List</label>
+                  <TextArea
+                    name="recepientList"
+                    style={{ minHeight: 50 }} 
+                    placeholder="Enter recepient list"
+                    onChange={this.handleInputChange}
+                    value={this.state.recepientList}
+                  />
+                </Form.Field>
+
+                <Form.Field inline>
+                  <label style={{ marginRight: "55px"}}>Frequency</label>
+                  <Dropdown
+                    name= 'frequency'
+                    placeholder= 'Select frequency'
+                    selection
+                    search
+                    options={this.state.frequencyOptions} 
+                    onChange={this.handleChange}
+                    value={this.state.frequency}
+                    multiple
+                  />
+                </Form.Field>
+              </Form>
+
+              {/* Stuff like ordering sub headings */}
+            </Modal.Content>
+            <Modal.Actions>
+              <Button color='red' onClick={() => this.handleConfirmationModalClose()}>
+                <Icon name='remove' /> Cancel
+              </Button>
+              <Button color='green' onClick={() => this.handleConfirmClick()}>
+                <Icon name='checkmark' /> Confirm
+              </Button>
+          </Modal.Actions>
+        </Modal>
+      )
+   }
+
+   handleCreateClick = async() => {
+      console.log("Inside handleCreateClick")
+      this.setState({
+        createClicked: true
+      })
+   }
+
+   handleConfirmationResponseModalClose = () => {
+      this.setState({ alertCreationConfirmed: false})
+   }
+
+   handleConfirmClick = async() => {
+      console.log("inside handleConfirmClick")
+      //sending request to backend
+      const response = await axios
+      // .post('https://omealerts.herokuapp.com/', this.state)\
+      .post('http://localhost:5000/update', this.state)
+      .catch(err => {
+        console.log("error in Axios request", err.message);
+        toast.error(err.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
+        this.setState({
+          createClicked: false
+        })
+      })
+      console.log("response from create alert", response);
+
+      if(response.status === 200) {
+        this.setState({
+          alertCreationConfirmed: true,
+          createClicked: false
+        })
+      }
    }
 }

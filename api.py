@@ -36,24 +36,11 @@ def connect_db():
   print("connected to db")
   return connection
 
-print("after connection to db")
-
-# @app.route('/reports/<path:path>')
-# def send_report(path):
-#     return send_from_directory('reports', path)
-
 def get_cursor(connection): 
   connection.ping(reconnect=True)
   return connection.cursor()
 
 app = Flask(__name__)
-
-# @app.route('/database', methods=['GET', 'POST']) 
-
-
-# @app.route('/public')
-# def root():
-#   return app.send_static_file('link.csv')
 
 @app.route('/', methods=["POST"])
 @cross_origin()
@@ -455,7 +442,18 @@ def alert():
     synrel,
     mddar,
     irrtextrem,
-    marelmat
+    marelmat,
+    alias_lemmatization,
+    negative_aliases,
+    negative_search_boolean,
+    negative_alias_lemmatization,
+    sentence_wo_neg_boolean,
+    email_subject,
+    header,
+    subheader,
+    subheader_order,
+    frequency,
+    recepient_list
     FROM ome_alerts_DJ_fe_design
     WHERE idome_alerts = %s
     """
@@ -469,6 +467,245 @@ def alert():
   connection.commit()
   connection.close()
   return jsonify(res)
+
+
+@app.route('/update', methods=["POST"])
+@cross_origin()
+def update_alert_via_omeId():
+  print('Updating alert', flush=True)
+  
+
+  connection = connect_db()
+  cur = connection.cursor()
+
+  omeId = request.json['omeId']
+  print(omeId, flush=True)
+
+  keywords = request.json['keywords']
+  keywords = ",".join(keywords)
+  if not keywords:
+    keywords = None
+
+  aliases = request.json['aliases']
+  aliases = ",".join(aliases)
+  if not aliases:
+    aliases = None
+
+  lemmapp = request.json['lemmapp']
+  if not lemmapp:
+    lemmapp = None
+
+  aliaslem = request.json['aliaslem']
+  if not aliaslem:
+    aliaslem = None
+
+  negalias = request.json['negalias']
+  if not negalias:
+    negalias = None
+
+  negsearchbool = request.json['negsearchbool']
+  if not negsearchbool:
+    negsearchbool = None
+  
+  negaliaslemm = request.json['negaliaslemm']
+  if not negaliaslemm:
+    negaliaslemm = None
+
+  user = request.json['user']
+  if not user:
+    user = None
+
+  emailAlert = request.json['emailAlert']
+  if not emailAlert:
+    emailAlert = 'no'
+  else:
+    emailAlert = 'yes'
+
+  searchtype = request.json['searchtype']
+  if not searchtype:
+    searchtype = None
+
+  senWoNegBool = request.json['senWoNegBool']
+  if not senWoNegBool:
+    senWoNegBool = 'no'
+  else:
+    senWoNegBool = 'yes'
+
+  sourceClass = request.json['sourceClass']
+  sourceLink = request.json['sourceLink']
+
+  if not sourceClass:
+    sourceClass = sourceLink
+  
+  # if not sourceLink:
+  #   sourceClass = None
+
+  alertTitle = request.json['alertTitle']
+  if not alertTitle:
+    alertTitle = None
+
+  alertDate = request.json['alertDate']
+  if not alertDate:
+    alertDate = None
+  
+  emailSubject = request.json['emailSubject']
+  if not emailSubject:
+    emailSubject = None
+  
+  header = request.json['header']
+  if not header:
+    header = None
+  
+  print(header, flush=True)
+  
+  subheader = request.json['subheader']
+  if not subheader:
+    subheader = None
+  
+  subheaderOrder = request.json['subheaderOrder']
+  if not subheaderOrder:
+    subheaderOrder = None
+  
+  recepientList = request.json['recepientList']
+  if not recepientList:
+    recepientList = None
+  
+  frequency = request.json['frequency']
+  if not frequency:
+    frequency = None
+    s = ""
+  else:
+    s = ","
+    s = s.join(frequency)
+  
+  synrel = request.json['synrel']
+  if synrel==False:
+    synrel = 0
+  else:
+    synrel = 1
+
+  mddar = request.json['mddar']
+  if mddar==False:
+    mddar = 0
+  else:
+    mddar = 1
+
+  irrtextrem = request.json['irrtextrem']
+  if irrtextrem==False:
+    irrtextrem = 0
+  else:
+    irrtextrem = 1
+
+  marelmat = request.json['marelmat']
+  if marelmat==False:
+    marelmat = 0
+  else:
+    marelmat = 1
+
+  summary = request.json['summary']
+  if summary==False:
+    summary = 0
+  else:
+    summary = 1
+    
+  relstories = request.json['relstories']
+  if relstories==False:
+    relstories = 0
+  else:
+    relstories = 1
+
+  hisrelstories = request.json['hisrelstories']
+  if hisrelstories==False:
+    hisrelstories = 0
+  else:
+    hisrelstories = 1
+
+  trendnews = request.json['trendnews']
+  if trendnews==False:
+    trendnews = 0
+  else:
+    trendnews = 1
+
+  try:
+    update_ome_alert_query = '''UPDATE `ome_alerts_DJ_fe_design` 
+    SET keyword = %s,
+        aliases = %s,
+        lemmatizer_application = %s,
+        alias_lemmatization = %s,
+        negative_aliases = %s,
+        negative_search_boolean = %s,
+        negative_alias_lemmatization = %s,
+        user = %s,
+        email_alert = %s,
+        search_type = %s,
+        sentence_wo_neg_boolean = %s,
+        source_select = %s,
+        alert_title = %s,
+        date_added = %s,
+        email_subject = %s,
+        header = %s,
+        subheader = %s,
+        subheader_order = %s,
+        recepient_list = %s,
+        frequency = %s,
+        synrel = %s,
+        mddar = %s,
+        irrtextrem = %s,
+        marelmat = %s,
+        summary = %s,
+        related_stories = %s,
+        historical_related_stories = %s,
+        trending_news = %s
+    WHERE idome_alerts = %s
+    '''
+    
+    cur.execute(
+      update_ome_alert_query, (
+          keywords,
+          aliases,
+          lemmapp,
+          aliaslem,
+          negalias,
+          negsearchbool,
+          negaliaslemm,
+          user,
+          emailAlert,
+          searchtype,
+          senWoNegBool,
+          sourceClass,
+          alertTitle,
+          alertDate,
+          emailSubject,
+          header,
+          subheader,
+          subheaderOrder,
+          recepientList,
+          s,
+          synrel,
+          mddar,
+          irrtextrem,
+          marelmat,
+          summary,
+          relstories,
+          hisrelstories,
+          trendnews,
+          omeId
+        )
+      )
+  except Exception as e:
+    print("Update OME Alert Exception", e)
+
+  updated_ome_alert_query = '''SELECT * FROM `ome_alerts_DJ_fe_design` WHERE idome_alerts=%s'''
+  cur.execute(updated_ome_alert_query, omeId)
+  last_updated_ome_alert = cur.fetchall()
+
+  print(last_updated_ome_alert, flush=True)
+  
+  connection.commit()
+  connection.close()
+
+  # return jsonify(results=last_updated_ome_alert)
+  return jsonify(results='done')
 
 if __name__ == '__main__':
   app.run(debug=False)

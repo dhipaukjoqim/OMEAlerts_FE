@@ -979,7 +979,7 @@ export default class Home extends Component {
                               <Form.Field inline>
                                 <label><b>Alias lemmatization</b></label>
                                 <input
-                                  name="aliaslemm"
+                                  name="aliaslem"
                                   style={{ marginLeft: "100px", minWidth: "400px"}} 
                                   placeholder="Enter alias lemmatization"
                                   onChange={this.handleInputChange}
@@ -1028,6 +1028,7 @@ export default class Home extends Component {
                                     this.state.senWoNegBool = data.checked
                                   }}
                                   value={this.state.senWoNegBool}
+                                  defaultChecked={this.state.senWoNegBool}
                                 />
                               </Form.Field>
                           </Form>
